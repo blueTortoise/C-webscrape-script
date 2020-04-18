@@ -1,0 +1,64 @@
+        static void parse()
+        {
+            //declar variables
+            string filepath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string path2;
+            string data = "";
+            bool boolthing = false;
+            int i;
+            int x = 0;
+            DirectoryInfo d = new DirectoryInfo(@"C:\Users\Loren\OneDrive\SCPData\Raw_Data");
+
+            //loop through all the text files we recorded earlier
+            foreach (var file in d.GetFiles("*.txt"))
+            {
+                //establish a boolean which will later be used to determine if the streamed text line being read has the desired text we are searching for
+                boolthing = false;
+                    //code to tell me how many files the program has completed while it runs
+                    x += 1;
+                    Console.Write("\r{0}   ", x);
+                    path2 = @"C:\Users\Loren\OneDrive\SCPData\Raw_Data\" + file.Name;
+
+                    int key = 0;
+                    
+                    //declare a streamreader to read through all text in each file, line by line.
+                    StreamReader reader = File.OpenText(path2);
+                    string line;
+                    //here begins the code which parses each line.
+                    //in this example, I am looking for the description of each file
+                    //this text search is a proxy for doing a getelementbyid search, but I wanted to focus on data analysis/parsing for this demo rather than web functions
+                    //for the full data parse I searched for several more data points beside description; image URLs, user tags, etc.
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        //find the html tag that indicates the start of each description line.
+                        if (line.Contains("<p><strong>Description:</strong>"))
+                        {
+                            
+                            string thing= "";
+                            boolthing = true;
+                            string s1 = file.Name;
+                            //the description string required some restructuring. The artifacts I needed to remove were at set points within the description so I did not need to use regular expressions in this example
+                            //create a string to serve as a unique identifier for the dataset
+                            //the data source document title already has such an identifier as determined by our earlier download script
+                        string s2 = s1.Substring(0, s1.Length - 4);
+                            try
+                            {
+                                //trim the HTML tag at the beginning of the description
+                                thing = line.Substring(33, line.Length - 37);
+                                //create a string to be used in the end dataset
+                                data = s2 + "|" + thing;
+                                //for each of teh 6000 documents downloaded, create a data line in a single flat file to be used as an end data file
+                                if (boolthing = true) {
+                                    using (System.IO.StreamWriter datafile = new System.IO.StreamWriter(@"C:\Users\Loren\OneDrive\SCPData\descfile.csv", true))
+                                    {
+                                        datafile.WriteLine(data);
+                                    }
+                                }
+                            }
+                            //if a file does not contain a description, it should create an overflow error. I don't care about those files anyway for this script, so there is minimal error handling.
+                            catch { Console.WriteLine("error"); }
+                        }
+                }
+            }
+        }
+
