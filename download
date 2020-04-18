@@ -1,0 +1,63 @@
+static void download()
+        {
+            //declare variables for use later
+            string filecontent;
+            int x = 0;
+            string y = "";
+            int urlnum = 1;
+
+            //I know this site has about 6000 articles, each starting with the same URL but ending in an article number, so I hardcoded a loop to go through each one. If I put in more time later, I'll put in logic to contextually detect when there are no more valid articles.
+            //starting with a URL string, loop through 6000 items and generate a url by inserting the valid article number.
+            for (urlnum = 1; urlnum <= 6000; urlnum++)
+            {
+                //the next few lines develop a random number and pause the code between .5 and 1.5 seconds per article. I did this because I had some concern that my code might be detected as a bot or DDOS attempt if the HTML requests were too fast or regular.
+                Random rnd = new Random();
+                int rand = rnd.Next(500, 1500);
+                System.Threading.Thread.Sleep(rand);
+                //write to console so I can tell how many iterations were completed
+                Console.Write("\r{0}   ", x);
+                string urlnumtostring = urlnum.ToString();
+                int urlstringlength = urlnumtostring.Length;
+
+                //the URL numbers are not regular, so for 1- and 2- digit numbers they need to be restructured (e.g., 1 becomes 001)
+                if (urlstringlength == 1) { y = "00" + urlnumtostring; }
+                if (urlstringlength == 2) { y = "0" + urlnumtostring; }
+                if (urlstringlength == 3) { y = urlnumtostring; }
+                if (urlstringlength == 4) { y = urlnumtostring; }
+
+                //define the based URL string and add on the appending number
+                string urlbase = ("http://www.scp-wiki.net/scp-");
+                string url = urlbase + y;
+
+                //wrap in a try string since we'll encounter an error if there is no article with the defined number
+                try
+                {
+                    Console.Write("\r{0}   ", y);
+                    //declare a web request and download file path
+                    //delete and override if the file already exists on that path
+                    WebRequest request = WebRequest.Create(url);
+                    WebResponse response = request.GetResponse();
+                    string filepath = @"C:\Users\Loren\Desktop\SCP\" + y + ".txt";
+                    File.Delete(filepath);
+
+                    //declare a streamreader to accept the webrequest response text
+                    using (Stream dataStream = response.GetResponseStream())
+                    {
+                        StreamReader reader = new StreamReader(dataStream);
+                        //place all html in the filecontent string
+                        filecontent = reader.ReadToEnd();
+
+                        //for each webpage, create a file named by the story ("SCP"), and write to a text doc
+                        using (System.IO.StreamWriter file = new System.IO.StreamWriter(filepath, true))
+                        {
+                            file.WriteLine(filecontent);
+                        }
+
+
+
+                    }
+                    }
+                //let me know which pages have no valid articles.
+                catch { Console.WriteLine(y); }
+            }
+        }
